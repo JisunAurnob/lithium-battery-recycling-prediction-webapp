@@ -47,7 +47,7 @@ Create a Python virtual environment and install the runtime dependencies:
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install flask joblib scikit-learn
+pip install flask flask-cors joblib scikit-learn
 python app.py
 ```
 
