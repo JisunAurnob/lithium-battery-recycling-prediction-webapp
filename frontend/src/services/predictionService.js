@@ -1,38 +1,37 @@
 import api from "@/lib/api";
 
-export const costPredict = async (features) => {
-    try {
-        const response = await api.post(`/predict/cost`, features);
-        if (response?.data?.prediction) {
-            return response?.data?.prediction[0];
-        } else {
-            return null;
-        }
-    } catch (error) {
-        console.error("Error request:", error);
+const predict = async (model, features) => {
+  try {
+    const response = await api.post(`/predict/${model}`, { features });
+    const prediction = response?.data?.prediction?.[0];
+
+    if (typeof prediction !== "number" || !Number.isFinite(prediction)) {
+      throw new Error("The prediction service returned an invalid result.");
     }
-};
-export const circularityPredict = async (features) => {
-    try {
-        const response = await api.post(`/predict/circularity`, features);
-        if (response?.data?.prediction) {
-            return response?.data?.prediction[0];
-        } else {
-            return null;
-        }
-    } catch (error) {
-        console.error("Error request:", error);
+
+    return prediction;
+  } catch (error) {
+    const message = error.response?.data?.error;
+
+    if (message) {
+      throw new Error(message);
     }
-};
-export const profitabilityPredict = async (features) => {
-    try {
-        const response = await api.post(`/predict/profit`, features);
-        if (response?.data?.prediction) {
-            return response?.data?.prediction[0];
-        } else {
-            return null;
-        }
-    } catch (error) {
-        console.error("Error request:", error);
+
+    if (error.code === "ECONNABORTED") {
+      throw new Error("The prediction took too long. Please try again.");
     }
+
+    if (error.request) {
+      throw new Error(
+        "The prediction server could not be reached. Check that the backend is running."
+      );
+    }
+
+    throw error;
+  }
 };
+
+export const costPredict = (features) => predict("cost", features);
+export const circularityPredict = (features) =>
+  predict("circularity", features);
+export const profitabilityPredict = (features) => predict("profit", features);

@@ -12,7 +12,7 @@ The application currently provides predictions for:
 
 - **Frontend:** Next.js 15, React 19, Tailwind CSS, Axios, and Lucide React
 - **Backend:** Python, Flask, Joblib, and scikit-learn-compatible models
-- **Models:** Serialized Joblib models stored in `backend/`
+- **Models:** Serialized Joblib models stored locally in `backend/pkl/`
 
 ## Project structure
 
@@ -20,9 +20,8 @@ The application currently provides predictions for:
 .
 ├── backend/
 │   ├── app.py                 # Flask prediction API
-│   ├── cost_m1.pkl            # Cost model
-│   ├── circularity_m1.pkl     # Circularity model
-│   └── profit_m1.pkl          # Profitability model
+│   ├── .env.example           # Backend model-path template
+│   └── pkl/                   # Local model files (ignored by Git)
 └── frontend/
     ├── public/                # Static assets
     ├── src/app/               # Next.js pages and styles
@@ -47,11 +46,12 @@ Create a Python virtual environment and install the runtime dependencies:
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install flask flask-cors joblib scikit-learn
+pip install flask flask-cors joblib python-dotenv scikit-learn
+cp .env.example .env
 python app.py
 ```
 
-Run the command from the `backend` directory so the API can locate the model files. The Flask server starts at `http://127.0.0.1:5000` by default.
+Place `Cost_web_latest.pkl`, `Circularity_web_latest.pkl`, and `Profit_latest.pkl` in `backend/pkl/`. Set each filename in `backend/.env`. Paths beginning with `/pkl/` are resolved relative to the `backend` directory, so `/pkl/Cost_web_latest.pkl` refers to `backend/pkl/Cost_web_latest.pkl`. The Flask server starts at `http://127.0.0.1:5000` by default.
 
 ### 2. Configure and start the frontend
 
@@ -82,7 +82,7 @@ Example request:
 ```bash
 curl -X POST http://127.0.0.1:5000/predict/profit \
   -H 'Content-Type: application/json' \
-  -d '{"features":[2024,100,50,1,0,0,1,0,1,0,0,1,0]}'
+  -d '{"features":[2024,1,0,1,0,1,0,0,0,0,0,0]}'
 ```
 
 Successful responses use this shape:
@@ -93,7 +93,7 @@ Successful responses use this shape:
 }
 ```
 
-The feature count and order must match the model selected. The frontend forms arrange the values in the order expected by their corresponding models.
+The feature count and order must match the selected model: cost expects 13 values, circularity expects 14, and profit expects 12. The frontend presents readable choices and arranges their encoded values in the exact order expected by each model.
 
 ## Available frontend commands
 
@@ -109,5 +109,5 @@ npm run lint   # Run lint checks
 ## Notes
 
 - Do not commit `.env` files or virtual environments.
-- The `.pkl` model files are required at runtime but are excluded from Git. Obtain or generate them locally and place them in `backend/`.
+- The `backend/pkl/` directory and all `.pkl` model files are excluded from Git.
 - Only load model files from trusted sources; serialized Python models can execute code while loading.
