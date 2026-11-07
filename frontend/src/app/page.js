@@ -67,9 +67,9 @@ const TAB_CONFIG = {
   cost: {
     label: "Cost",
     icon: BadgeDollarSign,
-    description: "Estimate the selected recycling cost or impact output.",
+    description: "Estimate the selected recycling cost or impact output in dollars per kilogram.",
     rows: "294,252 training records",
-    range: "Observed output range: 0 to 2,078.0643",
+    range: "Observed output range: $0 to $2,078.0643 per kg",
   },
   circularity: {
     label: "Circularity",
@@ -81,9 +81,9 @@ const TAB_CONFIG = {
   profit: {
     label: "Profit",
     icon: BarChart3,
-    description: "Estimate profit for a recycling and market scenario.",
+    description: "Estimate profit in dollars per kilogram for a recycling and market scenario.",
     rows: "8,586 training records",
-    range: "Observed profit range: −$2.46 to $7.92",
+    range: "Observed profit range: −$2.46 to $7.92 per kg",
   },
 };
 
@@ -500,18 +500,23 @@ function ResultPanel({ activeTab, record, error, loading }) {
 
   if (typeof result === "number") {
     if (activeTab === "profit") {
-      formattedResult = new Intl.NumberFormat("en-US", {
+      const formattedProfit = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(result);
+      formattedResult = `${formattedProfit}/kg`;
     } else if (activeTab === "circularity") {
       formattedResult = `${result.toFixed(4)}%`;
     } else {
-      formattedResult = new Intl.NumberFormat("en-US", {
+      const formattedCost = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
         maximumFractionDigits: 4,
       }).format(result);
+      formattedResult = `${formattedCost}/kg`;
     }
   }
 
@@ -650,7 +655,7 @@ export default function Home() {
             </div>
             <div className="rounded-2xl bg-emerald-700 p-6 text-white">
               <p className="text-sm font-semibold text-emerald-100">Dataset coverage</p>
-              <p className="mt-2 text-3xl font-extrabold">478,608</p>
+              {/* <p className="mt-2 text-3xl font-extrabold">478,608</p> */}
               <p className="mt-1 text-sm text-emerald-100">combined training records across three models</p>
             </div>
           </div>
